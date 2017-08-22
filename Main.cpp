@@ -31,6 +31,8 @@ void Stand();
 void UpdateStats();
 void PrintResults();
 void DisplayStats();
+void ShuffleCardsIfNeeded();
+void ClearGame();
 void Exit();
 
 vector<Command> hitOrStandCommands;
@@ -61,10 +63,20 @@ int main()
     StartRound();
 }
 
-//Rule is to shuffle every 6 rounds
-void ShuffleCardsIfNeeded(){
-    if(roundNumber % 6 == 0)
-    myDeck.ShuffleCards();
+void DisplayWelcomeMessage(){
+    cout << endl << endl << 
+    "╔╗ ┬  ┌─┐┌─┐┬┌─ ┬┌─┐┌─┐┬┌─" << endl <<
+    "╠╩╗│  ├─┤│  ├┴┐ │├─┤│  ├┴┐" << endl << 
+    "╚═╝┴─┘┴ ┴└─┘┴ ┴└┘┴ ┴└─┘┴ ┴" << endl;
+    cout << "Welcome to CLI Blackjack" << endl;
+    cout << "Created by: Salvador Soberanes" << endl;
+
+}
+
+void StartRound(){
+    ClearGame();
+    cout << endl << endl;
+    questionDialog("=== Do you want to play a round of blackjack? (Y/N)", playYesOrNoCommands);
 }
 
 void Play(){
@@ -87,6 +99,12 @@ void Play(){
     PrintResults();
     UpdateStats();
     StartRound();
+}
+
+//Rule is to shuffle every 6 rounds
+void ShuffleCardsIfNeeded(){
+    if(roundNumber % 6 == 0)
+    myDeck.ShuffleCards();
 }
 
 // Returns true if a winner is found
@@ -140,6 +158,7 @@ void PrintBlackjack(){
         "╚═╝┴─┘┴ ┴└─┘┴ ┴└┘┴ ┴└─┘┴ ┴" << endl;
     }
 }
+
 void PrintResults(){
     if(playerWins || dealerWins){
         cout << endl;
@@ -193,26 +212,10 @@ void Stand(){
 
     cout << "Dealer's turn. Dealer shows cards:"<<endl;
     dealerHand.PrintCards();
-    while(dealerHand.CanDealerHit()){
-        if(!CheckWinner(false))
-            DrawCard("himself", dealerHand, false);
-        else break;
+    while(dealerHand.CanDealerHit()) {
+        DrawCard("himself", dealerHand, false);
     }
     CheckWinner(true);
-}
-
-void ClearGame(){
-    playerHand.Clear();
-    dealerHand.Clear();
-    dealerWins = false;
-    playerWins = false;
-    blackjack = false;
-}
-
-void StartRound(){
-    ClearGame();
-    cout << endl << endl;
-    questionDialog("=== Do you want to play a round of blackjack? (Y/N)", playYesOrNoCommands);
 }
 
 void DisplayStats(){
@@ -226,14 +229,12 @@ void DisplayStats(){
     cout << "=============================================" << endl << endl << endl;
 }
 
-void DisplayWelcomeMessage(){
-    cout << endl << endl << 
-    "╔╗ ┬  ┌─┐┌─┐┬┌─ ┬┌─┐┌─┐┬┌─" << endl <<
-    "╠╩╗│  ├─┤│  ├┴┐ │├─┤│  ├┴┐" << endl << 
-    "╚═╝┴─┘┴ ┴└─┘┴ ┴└┘┴ ┴└─┘┴ ┴" << endl;
-    cout << "Welcome to CLI Blackjack" << endl;
-    cout << "Created by: Salvador Soberanes" << endl;
-
+void ClearGame(){
+    playerHand.Clear();
+    dealerHand.Clear();
+    dealerWins = false;
+    playerWins = false;
+    blackjack = false;
 }
 
 void Exit(){
