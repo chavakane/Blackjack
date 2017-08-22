@@ -140,13 +140,16 @@ bool CheckWinner(bool end){
 void UpdateStats(){
     if(playerWins || dealerWins){
         if(dealerWins && playerWins)
+        {
             tieCount++;
+        }
         else
+        {
             if(dealerWins)
                 dealerWinCount++;
-        else
-            if(playerWins)
+            else
                 playerWinCount++;
+        }
     }
 }
 
@@ -164,13 +167,16 @@ void PrintResults(){
         cout << endl;
         PrintBlackjack();
         if(dealerWins && playerWins)
+        {
             cout << "===== TIE GAME !!! =====" << endl;
+        }
         else
+        {
             if(dealerWins)
                 cout << endl << "===== DEALER WINS!! =====" << endl <<endl;
-        else
-            if(playerWins)
+            else
                 cout << endl << "===== PLAYER WINS!! =====" << endl <<endl;
+        }
 
         cout << "Dealer's Hand Value:" << dealerHand.GetValue() << endl;
         dealerHand.PrintCards();
