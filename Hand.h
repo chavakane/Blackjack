@@ -2,6 +2,7 @@ class Hand {
     private:
         std::vector<Card> cards;
         int handValues[2];
+        bool hasSoftHand();
 
     public:
         void AddCard(Card card);
@@ -11,8 +12,8 @@ class Hand {
         int GetHandValueCloseTo21();
         bool CanHit();
         bool CanDealerHit();
+        bool IsHandBust();
         bool IsBlackjack();
-        bool IsOverflow();
         void PrintCards();
         void Clear();
 };

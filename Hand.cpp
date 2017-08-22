@@ -19,7 +19,7 @@ void Hand::AddCard(Card card){
 }
 
 string Hand::GetValue(){
-    if(GetHandValue() == GetSoftHandValue() || (GetHandValue() <= 21 && GetSoftHandValue() >21)){
+    if(!hasSoftHand() || (GetHandValue() <= 21 && GetSoftHandValue() >21)){
         return to_string(GetHandValue());
     }
 
@@ -37,6 +37,10 @@ int Hand::GetSoftHandValue(){
     return handValues[1];
 }
 
+bool Hand::hasSoftHand(){
+    return GetHandValue() != GetSoftHandValue();
+}
+
 int Hand::GetHandValueCloseTo21(){
     if(GetHandValue()<=21 && GetHandValue() >= GetSoftHandValue())
         return GetHandValue();
@@ -49,16 +53,19 @@ bool Hand::CanHit(){
     return GetHandValue() < 21 || GetSoftHandValue() < 21;
 }
 
+bool Hand::IsHandBust(){
+    return GetHandValue() > 21 && GetSoftHandValue() > 21;
+}
+
+//Rule - Dealer must hit on soft 17
 bool Hand::CanDealerHit(){
-    return GetSoftHandValue() < 18;
+    if(hasSoftHand())
+        return GetSoftHandValue() < 18;
+    return GetHandValue() < 17;
 }
 
 bool Hand::IsBlackjack(){
     return GetHandValue() == 21 || GetSoftHandValue() == 21;
-}
-
-bool Hand::IsOverflow(){
-    return GetHandValue() > 21 && GetSoftHandValue() > 21;
 }
 
 void Hand::Clear(){

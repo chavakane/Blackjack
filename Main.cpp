@@ -17,13 +17,19 @@ int dealerWinCount = 0;
 int tieCount = 0;
 Hand playerHand;
 Hand dealerHand;
+bool dealerWins = false;
+bool playerWins = false;
+bool blackjack = false;
 
+void DisplayWelcomeMessage();
 void StartRound();
 void Play();
 void DrawCard(string owner, Hand &hand,  bool faceDown);
 bool CheckWinner(bool end);
 void Hit();
 void Stand();
+void UpdateStats();
+void PrintResults();
 void DisplayStats();
 void Exit();
 
@@ -49,17 +55,22 @@ void SetupCommands(){
 
 int main()
 {
+    DisplayWelcomeMessage();
     SetupCommands();
     myDeck.BuildDeck();
     StartRound();
 }
 
-void Play(){
-    //Shuffle deck every 6 rounds
+//Rule is to shuffle every 6 rounds
+void ShuffleCardsIfNeeded(){
     if(roundNumber % 6 == 0)
-        myDeck.ShuffleCards();
+    myDeck.ShuffleCards();
+}
 
-    cout << "<< Starting round " << (++roundNumber) << " >> " << endl <<endl;
+void Play(){
+    ShuffleCardsIfNeeded();
+
+    cout << "<< Starting ROUND " << (++roundNumber) << " >> " << endl <<endl;
     
     DrawCard("player", playerHand, false);
     DrawCard("player", playerHand, false);
@@ -72,41 +83,32 @@ void Play(){
         cout << "== Hand value is: " << playerHand.GetValue() << endl;
         questionDialog("Hit or Stand? (H/S)\n", hitOrStandCommands);
     }
+
+    PrintResults();
+    UpdateStats();
     StartRound();
 }
 
 // Returns true if a winner is found
 bool CheckWinner(bool end){
-
-    bool dealerWins = false;
-    bool playerWins = false;
-    bool blackjack = false;
-
-    if(dealerHand.IsBlackjack()){
-        dealerWins = true;
-        blackjack = true;
-    }
-
-    if(playerHand.IsBlackjack()){
-        playerWins = true;
-        blackjack = true;
-    }
-
-    if(playerHand.IsOverflow())
+    if(dealerHand.IsBlackjack())
         dealerWins = true;
     
-    if(dealerHand.IsOverflow())
+    if(playerHand.IsBlackjack())
         playerWins = true;
 
-    if(blackjack)
-        cout << endl << endl << "****** BLACKJACK!!! *****";
+    if(playerHand.IsHandBust())
+        dealerWins = true;
     
+    if(dealerHand.IsHandBust())
+        playerWins = true;
+
     if(end && !(playerWins || dealerWins))
     {
         if(dealerHand.GetHandValueCloseTo21() == playerHand.GetHandValueCloseTo21())
         {
-                playerWins = true;
-                dealerWins = true;
+            playerWins = true;
+            dealerWins = true;
         }
         else
         {
@@ -114,32 +116,50 @@ bool CheckWinner(bool end){
             playerWins = !dealerWins;
         }    
     }
+    return (playerWins || dealerWins);
+}
 
-    if(dealerWins && playerWins){
-        tieCount++;
-        cout << "Its a TIE!!:" << endl;
-    }
-    else
-    if(dealerWins){
-        dealerWinCount++;
-        cout << endl << "===== DEALER WINS!! =====" << endl <<endl;
-    }
-    else
-    if(playerWins){
-        playerWinCount++;
-        cout << endl << "===== PLAYER WINS!! =====" << endl <<endl;
-    }
-
+void UpdateStats(){
     if(playerWins || dealerWins){
+        if(dealerWins && playerWins)
+            tieCount++;
+        else
+            if(dealerWins)
+                dealerWinCount++;
+        else
+            if(playerWins)
+                playerWinCount++;
+    }
+}
+
+void PrintBlackjack(){
+    if(playerHand.IsBlackjack() || dealerHand.IsBlackjack()){
+        cout << endl << 
+        "╔╗ ┬  ┌─┐┌─┐┬┌─ ┬┌─┐┌─┐┬┌─" << endl <<
+        "╠╩╗│  ├─┤│  ├┴┐ │├─┤│  ├┴┐" << endl << 
+        "╚═╝┴─┘┴ ┴└─┘┴ ┴└┘┴ ┴└─┘┴ ┴" << endl;
+    }
+}
+void PrintResults(){
+    if(playerWins || dealerWins){
+        cout << endl;
+        PrintBlackjack();
+        if(dealerWins && playerWins)
+            cout << "===== TIE GAME !!! =====" << endl;
+        else
+            if(dealerWins)
+                cout << endl << "===== DEALER WINS!! =====" << endl <<endl;
+        else
+            if(playerWins)
+                cout << endl << "===== PLAYER WINS!! =====" << endl <<endl;
+
         cout << "Dealer's Hand Value:" << dealerHand.GetValue() << endl;
         dealerHand.PrintCards();
         cout << endl;
         cout << "Player's Hand Value:" << playerHand.GetValue() << endl;
         playerHand.PrintCards();
         cout << endl << endl;
-        return true;
     }
-    return false;
 }
 
 void DrawCard(string owner, Hand &hand,  bool faceDown){
@@ -162,26 +182,35 @@ void Hit() {
         questionDialog("Hit or Stand? (H/S)\n", hitOrStandCommands);
     }
     else
-        CheckWinner(false);
+        Stand();
 }
 
+//Dealers turn
 void Stand(){
-    //Dealers turn
+    CheckWinner(false);
+    if(dealerWins)
+        return;
+
     cout << "Dealer's turn. Dealer shows cards:"<<endl;
     dealerHand.PrintCards();
     while(dealerHand.CanDealerHit()){
-        DrawCard("himself", dealerHand, false);
+        if(!CheckWinner(false))
+            DrawCard("himself", dealerHand, false);
+        else break;
     }
     CheckWinner(true);
 }
 
-void ClearHands(){
+void ClearGame(){
     playerHand.Clear();
     dealerHand.Clear();
+    dealerWins = false;
+    playerWins = false;
+    blackjack = false;
 }
 
 void StartRound(){
-    ClearHands();
+    ClearGame();
     cout << endl << endl;
     questionDialog("=== Do you want to play a round of blackjack? (Y/N)", playYesOrNoCommands);
 }
@@ -198,10 +227,18 @@ void DisplayStats(){
 }
 
 void DisplayWelcomeMessage(){
+    cout << endl << endl << 
+    "╔╗ ┬  ┌─┐┌─┐┬┌─ ┬┌─┐┌─┐┬┌─" << endl <<
+    "╠╩╗│  ├─┤│  ├┴┐ │├─┤│  ├┴┐" << endl << 
+    "╚═╝┴─┘┴ ┴└─┘┴ ┴└┘┴ ┴└─┘┴ ┴" << endl;
+    cout << "Welcome to CLI Blackjack" << endl;
+    cout << "Created by: Salvador Soberanes" << endl;
 
 }
 
 void Exit(){
+    cout << "Thanks for playing CLI Blackjack!" << endl;
+    DisplayStats();
     cout << "See ya later!" << endl;
     exit(0);
 }
